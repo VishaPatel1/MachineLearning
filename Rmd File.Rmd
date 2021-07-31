@@ -7,16 +7,13 @@ output: html_document
 
 ## Overview
 
-This analysis will use a training set in which individuals were asked to do exercises correctly and incorrently. Using information from the test set, I will build a  model that will predict weather individuals correctly or incorrectly did the same exercises in a test set. This analysis is seperated into mutiple sections: 
-1. Exploratory Analysis 
-2. 
-3. 
-4. 
+This analysis will use a training set in which individuals were asked to do exercises correctly and incorrectly. Using information from the test set, I will build a  model that will predict weather individuals correctly or incorrectly did the same exercises in a test set. This analysis is separated into multiple sections: 
+
 
 ## Loading and cleaning datasets
 
 We first need to get rid of the NAs and irrelevant columns. 
-```{r setup}
+```{r setup, messages = F, warning= F}
 # Loading the correct packages and dataset
 library(data.table)
 library(readxl)
@@ -50,7 +47,7 @@ test <- training[-inTrain,]
 ## Decision Tree
 
 Let's see how a decision tree might work. 
-```{r}
+```{r, messages = F, warning= F}
 library(rpart)
 library(rattle)
 library(rpart.plot)
@@ -63,22 +60,33 @@ confusionMatrix(predict_model1, test$classe)
 ```
 
 ## Random Forest Model 
-You can also embed plots, for example:
+Next, I will run a random forest model. 
 
-```{r}
+```{r, messages = F, warning= F}
 library(randomForest)
 model2 <- train(classe ~., data = training, method = "rf")
 ##Let's predict on the test set now to see how well this prediction model fits.
-predict_model2 <- predict(model2, newdata = test, type= "rf")
+predict_model2 <- predict(model2, newdata = test)
 confusionMatrix(predict_model2, test$classe)
 ```
 
 ## GLM Model 
-Lastly, we will 
-```{r, echo=FALSE}
-library(randomForest)
-model3 <- train(classe ~., data = training, method = "glm")
+Lastly, I will run a generalized linear model. 
+```{r, messages = F, warning= F}
+library(gbm)
+model3 <- train(classe ~., data = training, method = "gbm")
 ##Let's predict on the test set now to see how well this prediction model fits.
-predict_model3 <- predict(model3, newdata = test, type= "glm")
+predict_model3 <- predict(model3, newdata = test)
 confusionMatrix(predict_model3, test$classe)
 ```
+
+## Final Prediction
+The accuracy of each test is the following: Decision Tree (74%), RainForest (100%), and GBM(98%). 
+Based on this I will run the model 2 on the validation set.
+
+```{r, messages = F, warning= F}
+final_prediction <- predict(model2 , newdata=validation)
+final_prediction
+```
+
+
