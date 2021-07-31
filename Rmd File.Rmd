@@ -1,0 +1,84 @@
+---
+title: "Machine Learning Project"
+author: "Visha Patel"
+date: "7/31/2021"
+output: html_document
+---
+
+## Overview
+
+This analysis will use a training set in which individuals were asked to do exercises correctly and incorrently. Using information from the test set, I will build a  model that will predict weather individuals correctly or incorrectly did the same exercises in a test set. This analysis is seperated into mutiple sections: 
+1. Exploratory Analysis 
+2. 
+3. 
+4. 
+
+## Loading and cleaning datasets
+
+We first need to get rid of the NAs and irrelevant columns. 
+```{r setup}
+# Loading the correct packages and dataset
+library(data.table)
+library(readxl)
+library(dplyr)
+library(caret)
+training <- read.table(file = "./pml-training.csv", "," , header = T)
+validation <- read.table(file = "./pml-testing.csv", "," , header = T)
+
+# Get rid of the first seven columns because they are just user information that is irrelevant. 
+training <- training[,8:160]
+validation <- validation[,8:160]
+training$classe <- as.factor(training$classe)
+
+# Several columns have NA's as well. 
+colname <- colnames(training)[(colSums(!is.na(training)))/19622 > .95]
+colname <- colname[-86]
+training <- training %>% select(colname, classe)
+validation <- validation %>% select(colname,problem_id)
+nzv <- nearZeroVar(training)
+training <- training[,-nzv]
+validation <- validation[,-nzv]
+
+## Let's split the training test set once more, so we can try mutiple models before chosing a final one. 
+inTrain <- createDataPartition(y=training$classe,p=0.7, list=FALSE)
+training <- training[inTrain,]
+test <- training[-inTrain,]
+
+
+```
+
+## Decision Tree
+
+Let's see how a decision tree might work. 
+```{r}
+library(rpart)
+library(rattle)
+library(rpart.plot)
+library(RColorBrewer)
+model1 <- rpart(classe ~., data = training, method = "class")
+fancyRpartPlot(model1, caption = NULL)
+##Let's predict on the test set now to see how well this prediction model fits.
+predict_model1 <- predict(model1, newdata = test, type= "class")
+confusionMatrix(predict_model1, test$classe)
+```
+
+## Random Forest Model 
+You can also embed plots, for example:
+
+```{r}
+library(randomForest)
+model2 <- train(classe ~., data = training, method = "rf")
+##Let's predict on the test set now to see how well this prediction model fits.
+predict_model2 <- predict(model2, newdata = test, type= "rf")
+confusionMatrix(predict_model2, test$classe)
+```
+
+## GLM Model 
+Lastly, we will 
+```{r, echo=FALSE}
+library(randomForest)
+model3 <- train(classe ~., data = training, method = "glm")
+##Let's predict on the test set now to see how well this prediction model fits.
+predict_model3 <- predict(model3, newdata = test, type= "glm")
+confusionMatrix(predict_model3, test$classe)
+```
